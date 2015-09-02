@@ -20,8 +20,8 @@
   -->
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.kiji.mapreduce</groupId>
-  <artifactId>kiji-mapreduce-root</artifactId>
+  <groupId>org.kiji.mapreduce.lib</groupId>
+  <artifactId>kiji-mapreduce-lib-root</artifactId>
   <version>1.7.0</version>
   <packaging>pom</packaging>
 
@@ -31,30 +31,65 @@
     <version>1.7.0</version>
   </parent>
 
-  <name>KijiMR top-level project</name>
-  <description>MapReduce framework integration for KijiSchema</description>
+  <name>The KijiMR Library top-level project</name>
+  <description>The KijiMR Library for KijiSchema</description>
   <inceptionYear>2012</inceptionYear>
 
   <properties>
-    <kiji-platforms.version>1.7.0</kiji-platforms.version>
     <kiji-schema.version>1.7.0</kiji-schema.version>
+    <kiji-schema-shell.version>1.7.0</kiji-schema-shell.version>
+    <kiji-mapreduce.version>1.7.0</kiji-mapreduce.version>
     <fake-hbase.version>1.7.0</fake-hbase.version>
     <kiji-annotations.version>1.7.0</kiji-annotations.version>
     <kiji-delegation.version>1.7.0</kiji-delegation.version>
+    <kiji-platforms.version>1.7.0</kiji-platforms.version>
   </properties>
 
   <modules>
     <module>build-resources</module>
-    <module>platform-api</module>
-    <module>cdh5-bridge</module>
-    <module>cdh5-4-bridge</module>
-    <module>kiji-mapreduce</module>
     <module>kiji-mapreduce-lib</module>
-    <module>profiling</module>
-    <module>kiji-mapreduce-archetype</module>
+    <module>schema-shell-ext</module>
   </modules>
 
   <build>
+    <plugins>
+      <plugin>
+        <!--
+            KijiMR Lib depends on the oldest version of KijiSchema / KIJIMR that supports it.
+            To test whether the latest Kiji dependency SNAPSHOTs have introduced a regression:
+
+            Run the following commands in your shell
+
+            mvn versions:update-properties -N # Update the kiji-*.version properties
+                                              # in the top-level pom file; don't recurse.
+            mvn clean verify                  # Uses the new snapshot versions
+            mvn versions:revert               # Revert the pom file to before update-properties.
+                                    # Do not check in new Kiji SNAPSHOT dependencies in the pom.
+        -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <configuration>
+          <includeProperties>kiji-schema.version,kiji-schema-shell.version,kiji-mapreduce.version</includeProperties>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.kiji.schema</groupId>
+            <artifactId>kiji-schema</artifactId>
+            <version>${kiji-schema.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.kiji.schema-shell</groupId>
+            <artifactId>kiji-schema-shell</artifactId>
+            <version>${kiji-schema-shell.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.kiji.mapreduce</groupId>
+            <artifactId>kiji-mapreduce</artifactId>
+            <version>${kiji-mapreduce.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -64,7 +99,7 @@
           <artifactId>maven-checkstyle-plugin</artifactId>
           <dependencies>
             <dependency>
-              <groupId>org.kiji.mapreduce</groupId>
+              <groupId>org.kiji.mapreduce.lib</groupId>
               <artifactId>build-resources</artifactId>
               <version>${project.version}</version>
             </dependency>
@@ -78,24 +113,27 @@
           <artifactId>findbugs-maven-plugin</artifactId>
           <dependencies>
             <dependency>
-              <groupId>org.kiji.mapreduce</groupId>
+              <groupId>org.kiji.mapreduce.lib</groupId>
               <artifactId>build-resources</artifactId>
               <version>${project.version}</version>
             </dependency>
           </dependencies>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-archetype-plugin</artifactId>
-          <version>2.2</version>
         </plugin>
       </plugins>
     </pluginManagement>
   </build>
 
   <dependencyManagement>
+    <!--
+      Allow inter-module build dependencies that are also release-friendly
+      by specifying inter-module dependency version information here.
+    -->
     <dependencies>
+      <dependency>
+        <groupId>org.kiji.mapreduce.lib</groupId>
+        <artifactId>kiji-mapreduce-lib</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.kiji.annotations</groupId>
         <artifactId>annotations</artifactId>
@@ -108,13 +146,5 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <repositories>
-    <repository>
-      <id>kiji-repos</id>
-      <name>kiji-repos</name>
-      <url>https://repo.wibidata.com/artifactory/kiji</url>
-    </repository>
-  </repositories>
 
 </project>
