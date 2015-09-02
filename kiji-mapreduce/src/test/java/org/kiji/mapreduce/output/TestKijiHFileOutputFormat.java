@@ -36,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.KeyValue;
@@ -131,12 +132,12 @@ public class TestKijiHFileOutputFormat {
    * @return the content of the specified HFile, as an ordered list of KeyValue entries.
    * @throws IOException on I/O error.
    */
-  private static List<KeyValue> loadHFile(Path path, Configuration conf) throws IOException {
+  private static List<Cell> loadHFile(Path path, Configuration conf) throws IOException {
     final FileSystem fs = path.getFileSystem(conf);
     final CacheConfig cacheConf = new CacheConfig(conf);
-    final HFile.Reader reader = HFile.createReader(fs, path, cacheConf);
+    final HFile.Reader reader = HFile.createReader(fs, path, cacheConf, conf);
     final HFileScanner scanner = reader.getScanner(false, false);
-    final List<KeyValue> kvs = Lists.newArrayListWithCapacity((int) reader.getEntries());
+    final List<Cell> kvs = Lists.newArrayListWithCapacity((int) reader.getEntries());
     boolean hasNext = scanner.seekTo();
     while (hasNext) {
       kvs.add(scanner.getKeyValue());
@@ -156,7 +157,7 @@ public class TestKijiHFileOutputFormat {
   private void assertHFileContent(Path path, KeyValue... values) throws IOException {
     final FileSystem fs = path.getFileSystem(mConf);
     assertTrue(String.format("HFile '%s' does not exist.", path), fs.exists(path));
-    final List<KeyValue> kvs = loadHFile(path, mConf);
+    final List<Cell> kvs = loadHFile(path, mConf);
     assertEquals(kvs.size(), values.length);
     for (int i = 0; i < values.length; ++i) {
       assertEquals(kvs.get(i), values[i]);
