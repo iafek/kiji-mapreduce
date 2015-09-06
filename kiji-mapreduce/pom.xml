@@ -36,7 +36,7 @@
   <url>http://www.kiji.org</url>
 
   <properties>
-    <hadoop-configurator.version>1.0.3-SNAPSHOT</hadoop-configurator.version>
+    <hadoop-configurator.version>1.7.0</hadoop-configurator.version>
     <aspectj-maven-plugin.version>1.4</aspectj-maven-plugin.version>
     <aspectjrt.version>1.7.2</aspectjrt.version>
   </properties>
